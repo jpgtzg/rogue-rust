@@ -1,11 +1,21 @@
-const WIDTH: usize = 25;
+use rand::Rng;
+
+const WIDTH: usize = 10;
 const HEIGHT: usize = 25;
 
+const MAX_ROOM_WIDTH: usize = 6;
+const MAX_ROOM_HEIGHT: usize = 6;
+const MIN_ROOM_WIDTH: usize = 3;
+const MIN_ROOM_HEIGHT: usize = 3;
+
 fn main() {
-    let mut screen: Vec<Vec<String>> = vec![vec![String::from("."); WIDTH]; HEIGHT];
+    let mut screen: [[&str; WIDTH]; HEIGHT] = [[" . "; WIDTH]; HEIGHT];
 
-    random_walk(&mut screen);
+    generate_room(&mut screen);
+    display_screen(&screen);
+}
 
+fn display_screen(screen: &[[&str; WIDTH]; HEIGHT]) {
     for row in screen.iter() {
         for cell in row.iter() {
             print!("{}", cell);
@@ -14,43 +24,29 @@ fn main() {
     }
 }
 
-fn random_walk(screen: &mut Vec<Vec<String>>) {
-    let mut x = WIDTH / 2;
-    let mut y = HEIGHT / 2;
-    let mut current_direction = (rand::random::<i32>() % 4).abs();
-    let mut tunnel_length = get_tunnel_length();
-    let mut steps_in_current_direction = 0;
+fn generate_room(screen: &mut [[&str; WIDTH]; HEIGHT]) {
 
-    for _ in 0..100 {
-        // Change direction when tunnel length is reached
-        if steps_in_current_direction >= tunnel_length {
-            current_direction = (rand::random::<i32>() % 4).abs();
-            tunnel_length = get_tunnel_length();
-            steps_in_current_direction = 0;
-        }
+    let x_i = rand::rng().random_range(0..WIDTH);
+    let y_i = rand::rng().random_range(0..HEIGHT);
 
-        modify_position(&mut x, &mut y, current_direction);
-        steps_in_current_direction += 1;
+    let mut width = rand::rng().random_range(MIN_ROOM_WIDTH..MAX_ROOM_WIDTH);
+    let mut height = rand::rng().random_range(MIN_ROOM_HEIGHT..MAX_ROOM_HEIGHT);
 
-        if x >= WIDTH || y >= HEIGHT {
-            break;
-        }
-
-        screen[y][x] = String::from("X");
+    if x_i + width > WIDTH {
+        width = WIDTH - x_i;
     }
-}
-
-fn modify_position(x: &mut usize, y: &mut usize, direction: i32) {
-    match direction {
-        0 => if *x < WIDTH - 1 { *x += 1 },
-        1 => if *x > 0 { *x -= 1 },
-        2 => if *y < HEIGHT - 1 { *y += 1 },
-        3 => if *y > 0 { *y -= 1 },
-        _ => {}
+    if y_i + height > HEIGHT {
+        height = HEIGHT - y_i;
     }
-}
 
-fn get_tunnel_length() -> usize {
-    let length = (rand::random::<u32>() % 5 + 1) as usize;
-    length
+    for x in x_i..x_i + width {
+        for y in y_i..y_i + height {
+            screen[y][x] = " # ";
+        }
+    }
+
+    println!("x_i: {}", x_i);
+    println!("y_i: {}", y_i);
+    println!("width: {}", width);
+    println!("height: {}", height);
 }
